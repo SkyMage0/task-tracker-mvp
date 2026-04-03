@@ -17,6 +17,15 @@ def save_tasks(tasks):
     with open(TASKS_FILE, 'w', encoding='utf-8') as f:
         json.dump(tasks, f, ensure_ascii=False, indent=2)
 
+def migrate_old_tasks(tasks):
+    """Добавляет поля priority и deadline старым задачам (обратная совместимость)"""
+    for task in tasks:
+        if 'priority' not in task:
+            task['priority'] = 'medium'
+        if 'deadline' not in task:
+            task['deadline'] = None
+    return tasks
+
 def add_task():
     """Добавляет новую задачу с дедлайном и приоритетом"""
     description = input("📝 Введи задачу: ")
@@ -56,6 +65,9 @@ def list_tasks(show_all=True):
         print("📭 Нет задач. Отдыхаем!")
         return
     
+    # Миграция старых задач
+    tasks = migrate_old_tasks(tasks)
+    
     # Сортировка: сначала высокий приоритет, потом по дедлайну
     priority_order = {"high": 0, "medium": 1, "low": 2}
     tasks.sort(key=lambda x: (priority_order.get(x['priority'], 2), x['deadline'] if x['deadline'] else "9999-12-31"))
@@ -92,6 +104,9 @@ def show_statistics():
         print("📭 Нет данных для статистики")
         return
     
+    # Миграция старых задач
+    tasks = migrate_old_tasks(tasks)
+    
     total = len(tasks)
     completed = sum(1 for t in tasks if t['completed'])
     pending = total - completed
@@ -112,7 +127,12 @@ def show_statistics():
 
 def complete_task():
     """Отмечает задачу выполненной"""
-    task_id = int(input("ID задачи для отметки: "))
+    try:
+        task_id = int(input("ID задачи для отметки: "))
+    except ValueError:
+        print("❌ Введи число!")
+        return
+    
     tasks = load_tasks()
     for task in tasks:
         if task['id'] == task_id:
@@ -124,7 +144,12 @@ def complete_task():
 
 def delete_task():
     """Удаляет задачу"""
-    task_id = int(input("ID задачи для удаления: "))
+    try:
+        task_id = int(input("ID задачи для удаления: "))
+    except ValueError:
+        print("❌ Введи число!")
+        return
+    
     tasks = load_tasks()
     for i, task in enumerate(tasks):
         if task['id'] == task_id:
