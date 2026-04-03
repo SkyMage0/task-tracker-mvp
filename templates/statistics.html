@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Статистика - Трекер задач{% endblock %}
+
+{% block content %}
+<h2>📊 Детальная статистика</h2>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-number">{{ stats.total }}</div>
+        <div class="stat-name">Всего задач</div>
+    </div>
+    
+    <div class="stat-card green">
+        <div class="stat-number">{{ stats.completed }}</div>
+        <div class="stat-name">✅ Выполнено</div>
+    </div>
+    
+    <div class="stat-card orange">
+        <div class="stat-number">{{ stats.pending }}</div>
+        <div class="stat-name">⏳ В работе</div>
+    </div>
+    
+    <div class="stat-card blue">
+        <div class="stat-number">{{ stats.progress }}%</div>
+        <div class="stat-name">📈 Прогресс</div>
+    </div>
+</div>
+
+<div class="priority-stats">
+    <h3>Приоритеты (невыполненные)</h3>
+    <div class="priority-bars">
+        <div class="priority-item">
+            <span>🔴 Высокий</span>
+            <div class="bar-container">
+                <div class="bar high" style="width: {{ (stats.high_priority / stats.total * 100) if stats.total > 0 else 0 }}%;"></div>
+            </div>
+            <span>{{ stats.high_priority }}</span>
+        </div>
+        
+        <div class="priority-item">
+            <span>🟡 Средний</span>
+            <div class="bar-container">
+                <div class="bar medium" style="width: {{ (stats.medium_priority / stats.total * 100) if stats.total > 0 else 0 }}%;"></div>
+            </div>
+            <span>{{ stats.medium_priority }}</span>
+        </div>
+        
+        <div class="priority-item">
+            <span>🟢 Низкий</span>
+            <div class="bar-container">
+                <div class="bar low" style="width: {{ (stats.low_priority / stats.total * 100) if stats.total > 0 else 0 }}%;"></div>
+            </div>
+            <span>{{ stats.low_priority }}</span>
+        </div>
+    </div>
+</div>
+
+{% if stats.overdue > 0 %}
+<div class="warning-box">
+    ⚠️ У вас {{ stats.overdue }} просроченных задач! Срочно примите меры.
+</div>
+{% endif %}
+
+<div class="back-link">
+    <a href="{{ url_for('index') }}">← Назад к задачам</a>
+</div>
+{% endblock %}

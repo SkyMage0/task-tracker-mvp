@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Главная - Трекер задач{% endblock %}
+
+{% block content %}
+<div class="stats-bar">
+    <div class="stat">
+        <span class="stat-value">{{ stats.total }}</span>
+        <span class="stat-label">Всего задач</span>
+    </div>
+    <div class="stat">
+        <span class="stat-value">{{ stats.completed }}</span>
+        <span class="stat-label">Выполнено</span>
+    </div>
+    <div class="stat">
+        <span class="stat-value">{{ stats.pending }}</span>
+        <span class="stat-label">В работе</span>
+    </div>
+    <div class="stat">
+        <span class="stat-value">{{ stats.progress }}%</span>
+        <span class="stat-label">Прогресс</span>
+    </div>
+</div>
+
+<div class="progress-bar">
+    <div class="progress-fill" style="width: {{ stats.progress }}%;"></div>
+</div>
+
+<div class="add-task-form">
+    <h2>➕ Новая задача</h2>
+    <form method="POST" action="{{ url_for('add_task_web') }}">
+        <input type="text" name="description" placeholder="Что нужно сделать?" required>
+        
+        <select name="priority">
+            <option value="high">🔴 Высокий приоритет</option>
+            <option value="medium" selected>🟡 Средний приоритет</option>
+            <option value="low">🟢 Низкий приоритет</option>
+        </select>
+        
+        <input type="date" name="deadline">
+        
+        <button type="submit">➕ Добавить</button>
+    </form>
+</div>
+
+<div class="tasks-list">
+    <h2>📋 Мои задачи</h2>
+    
+    {% if tasks %}
+        {% for task in tasks %}
+        <div class="task {% if task.completed %}completed{% endif %} {% if task.priority == 'high' and not task.completed %}high-priority{% endif %}">
+            <div class="task-header">
+                <span class="task-status">
+                    {% if task.completed %}✅{% else %}⭕{% endif %}
+                </span>
+                <span class="task-priority">
+                    {% if task.priority == 'high' %}🔴{% elif task.priority == 'medium' %}🟡{% else %}🟢{% endif %}
+                </span>
+                <span class="task-title">{{ task.description }}</span>
+            </div>
+            
+            <div class="task-details">
+                <span>📅 Создана: {{ task.created_at }}</span>
+                {% if task.deadline %}
+                    <span>⏰ Дедлайн: {{ task.deadline }}</span>
+                {% endif %}
+            </div>
+            
+            <div class="task-actions">
+                {% if not task.completed %}
+                    <a href="{{ url_for('complete_task_web', task_id=task.id) }}" class="btn-complete">✅ Выполнить</a>
+                {% endif %}
+                <a href="{{ url_for('delete_task_web', task_id=task.id) }}" class="btn-delete" onclick="return confirm('Точно удалить?')">🗑️ Удалить</a>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <p>📭 Нет задач. Добавь первую!</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
